@@ -10,13 +10,11 @@ class RegistrationPage extends StatefulWidget {
 class _RegistrationPageState extends State<RegistrationPage> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
-  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
   void dispose() {
     _usernameController.dispose();
-    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -36,26 +34,26 @@ class _RegistrationPageState extends State<RegistrationPage> {
               TextFormField(
                 controller: _usernameController,
                 decoration: const InputDecoration(
-                  labelText: 'Username',
+                  labelText: 'Phone Number',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your username';
+                    return 'Please enter phone number';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 20),
               TextFormField(
-                controller: _emailController,
+                controller: _passwordController,
                 decoration: const InputDecoration(
-                  labelText: 'Email',
+                  labelText: 'Password',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
+                    return 'Please enter password';
                   }
                   return null;
                 },
@@ -65,12 +63,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 controller: _passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(
-                  labelText: 'Password',
+                  labelText: 'Confirm Password',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
+                    return 'Please enter confirm password';
                   }
                   return null;
                 },

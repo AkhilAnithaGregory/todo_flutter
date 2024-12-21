@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'registration_page.dart'; // Import the RegistrationPage
+import 'registration_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -74,7 +74,6 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
               TextButton(
                 onPressed: () {
-                  // Navigate to the registration page
                   Navigator.push(
                     context,
                     MaterialPageRoute(
