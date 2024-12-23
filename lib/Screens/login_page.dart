@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todo_flutter/Screens/todo_dashboard.dart';
 import 'registration_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -66,6 +67,10 @@ class _LoginPageState extends State<LoginPage> {
                   if (_formKey.currentState!.validate()) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Login successful')),
+                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Dashboard()),
                     );
                   }
                 },
