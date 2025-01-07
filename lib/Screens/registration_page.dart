@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'dart:convert';
 
+import 'package:todo_flutter/Screens/login_page.dart';
+
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
 
@@ -44,7 +46,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
               const SizedBox(height: 20),
               _buildConfirmPasswordField(),
               const SizedBox(height: 20),
-              _buildRegisterButton(),
+              Row(
+                children: [
+                  _buildRegisterButton(),
+                  const SizedBox(width: 10),
+                  _buildCancelRegistrationButton()
+                ],
+              ),
             ],
           ),
         ),
@@ -106,10 +114,34 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 
   Widget _buildRegisterButton() {
-    return ElevatedButton(
+    return Expanded(
+        child: ElevatedButton(
       onPressed: _isLoading ? null : _submitForm,
       child: const Text('Register'),
-    );
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF9395D2),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      ),
+    ));
+  }
+
+  Widget _buildCancelRegistrationButton() {
+    return Expanded(
+        child: ElevatedButton(
+      onPressed: () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      },
+      child: const Text('Cancel'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF9395D2),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      ),
+    ));
   }
 
   void _submitForm() {

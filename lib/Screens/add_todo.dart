@@ -126,7 +126,7 @@ class _AddTodoState extends State<AddTodo> {
   Widget _buildAddTodoButton() {
     return Expanded(
       child: ElevatedButton(
-        onPressed: _submitForm,
+        onPressed: _isLoading ? null :_submitForm,
         child: const Text('Add Todo'),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF9395D2),

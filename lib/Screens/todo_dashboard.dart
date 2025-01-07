@@ -96,7 +96,7 @@ class _DashboardState extends State<Dashboard> {
 
     if (pickedDate != null) {
       String formattedDate = pickedDate.toIso8601String().split('T').first;
-      _fetchTodos(formattedDate); // Fetch todos for the selected date
+      _fetchTodos(formattedDate);
     }
   }
 
@@ -138,8 +138,8 @@ class _DashboardState extends State<Dashboard> {
                   final todoId = todoItem['_id'];
 
                   return ListTile(
-                    title: Text(task),
-                    subtitle: Text('$description\nDate: $formattedDate'),
+                    title: Text('Task:$task'),
+                    subtitle: Text('Detail:$description\nDate: $formattedDate'),
                     leading: Icon(
                       isComplete == true
                           ? Icons.check_circle
@@ -164,7 +164,7 @@ class _DashboardState extends State<Dashboard> {
                         IconButton(
                           icon: const Icon(Icons.delete),
                           onPressed: () {
-                            _deleteTodoItem(todoId);
+                            _showDeleteConfirmationDialog(todoItem['_id']);
                           },
                         ),
                         IconButton(
@@ -253,6 +253,33 @@ class _DashboardState extends State<Dashboard> {
         SnackBar(content: Text('Error: $error')),
       );
     }
+  }
+
+  void _showDeleteConfirmationDialog(String todoId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Todo'),
+          content: const Text('Do you want to delete this todo?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteTodoItem(todoId);
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _deleteTodoItem(String todoId) async {

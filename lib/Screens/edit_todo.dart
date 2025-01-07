@@ -26,6 +26,7 @@ class _EditTodoAppState extends State<EditTodoApp> {
   final TextEditingController _taskController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   late String _loginToken;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -43,6 +44,9 @@ class _EditTodoAppState extends State<EditTodoApp> {
   }
 
   Future<void> _updateTodo() async {
+    setState(() {
+      _isLoading = true;
+    });
     final String url =
         'https://todo-mww8.onrender.com/api/todo/${widget.taskId}?date=${widget.datePart}';
     final response = await http.put(
@@ -61,14 +65,17 @@ class _EditTodoAppState extends State<EditTodoApp> {
     if (response.statusCode == 200) {
       await _fetchUpdatedTodos();
       Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => Dashboard()),
-        );
+        context,
+        MaterialPageRoute(builder: (context) => Dashboard()),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to update todo')),
       );
     }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _fetchUpdatedTodos() async {
@@ -103,13 +110,21 @@ class _EditTodoAppState extends State<EditTodoApp> {
               controller: _taskController,
               decoration: const InputDecoration(labelText: 'Task'),
             ),
+            const SizedBox(height: 10),
             TextFormField(
               controller: _descriptionController,
               decoration: const InputDecoration(labelText: 'Description'),
             ),
+            const SizedBox(height: 10),
             ElevatedButton(
-              onPressed: _updateTodo,
+              onPressed: _isLoading ? null : _updateTodo,
               child: const Text('Update Todo'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF9395D2),
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              ),
             ),
           ],
         ),

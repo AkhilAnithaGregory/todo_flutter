@@ -90,6 +90,11 @@ class _LoginPageState extends State<LoginPage> {
     return ElevatedButton(
       onPressed: _isLoading ? null : _submitLoginForm,
       child: const Text('Login'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF9395D2),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      ),
     );
   }
 
