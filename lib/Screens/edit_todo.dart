@@ -1,38 +1,91 @@
 import 'package:flutter/material.dart';
-import 'todo_dashboard.dart';
+import 'package:http/http.dart' as http;
+import 'package:todo_flutter/Screens/todo_dashboard.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
-void main() => runApp(const EditTodoApp());
+class EditTodoApp extends StatefulWidget {
+  final String taskId;
+  final String task;
+  final String description;
+  final String datePart;
 
-class EditTodoApp extends StatelessWidget {
-  const EditTodoApp({super.key});
+  const EditTodoApp({
+    required this.taskId,
+    required this.task,
+    required this.description,
+    required this.datePart,
+    super.key,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: EditTodo(),
-    );
+  State<EditTodoApp> createState() => _EditTodoAppState();
+}
+
+class _EditTodoAppState extends State<EditTodoApp> {
+  final TextEditingController _taskController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  late String _loginToken;
+
+  @override
+  void initState() {
+    super.initState();
+    _taskController.text = widget.task;
+    _descriptionController.text = widget.description;
+    _loadToken();
   }
-}
 
-class EditTodo extends StatefulWidget {
-  const EditTodo({super.key});
+  Future<void> _loadToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _loginToken = prefs.getString('loginToken') ?? '';
+    });
+  }
 
-  @override
-  State<EditTodo> createState() => _EditTodoState();
-}
+  Future<void> _updateTodo() async {
+    final String url =
+        'https://todo-mww8.onrender.com/api/todo/${widget.taskId}?date=${widget.datePart}';
+    final response = await http.put(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': _loginToken,
+      },
+      body: jsonEncode({
+        'task': _taskController.text,
+        'isComplete': false.toString(),
+        'description': _descriptionController.text,
+      }),
+    );
 
-class _EditTodoState extends State<EditTodo> {
-  final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _detailController = TextEditingController();
+    if (response.statusCode == 200) {
+      await _fetchUpdatedTodos();
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => Dashboard()),
+        );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to update todo')),
+      );
+    }
+  }
 
-  void _EditTodo() {
-    if (_formKey.currentState!.validate()) {
-      final String title = _titleController.text;
-      final String detail = _detailController.text;
+  Future<void> _fetchUpdatedTodos() async {
+    final String url = 'https://todo-mww8.onrender.com/api/todos';
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Authorization': _loginToken,
+      },
+    );
 
-      print('Title: $title');
-      print('Detail: $detail');
+    if (response.statusCode == 200) {
+      final List todos = json.decode(response.body);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to fetch updated todos')),
+      );
     }
   }
 
@@ -40,102 +93,25 @@ class _EditTodoState extends State<EditTodo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'ADD TODO',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: const Color(0xFF9395D2),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        title: const Text('Edit Todo'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a title';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _detailController,
-                decoration: const InputDecoration(
-                  labelText: 'Detail',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter some detail';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _EditTodo,
-                  child: const Text('Add Todo'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF9395D2),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 20),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 30),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _EditTodo,
-                      child: const Text('Update'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF9395D2),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 20),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const Dashboard()),
-                        );
-                      },
-                      child: const Text('Cancel'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF9395D2),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 20),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+        child: Column(
+          children: [
+            TextFormField(
+              controller: _taskController,
+              decoration: const InputDecoration(labelText: 'Task'),
+            ),
+            TextFormField(
+              controller: _descriptionController,
+              decoration: const InputDecoration(labelText: 'Description'),
+            ),
+            ElevatedButton(
+              onPressed: _updateTodo,
+              child: const Text('Update Todo'),
+            ),
+          ],
         ),
       ),
     );
