@@ -18,7 +18,6 @@ class _DashboardState extends State<Dashboard> {
   final Logger logger = Logger();
   String _loginToken = '';
   bool _isLoading = false;
-  bool _isHovered = false;
   List<dynamic> _todoItems = [];
   DateTime? _selectedDate = DateTime.now();
 
@@ -142,71 +141,58 @@ class _DashboardState extends State<Dashboard> {
                             "${date.year}-${date.month}-${date.day}";
                         final todoId = todoItem['_id'];
 
-                        return MouseRegion(
-                          onEnter: (_) {
-                            setState(() {
-                              _isHovered = true;
-                            });
-                          },
-                          onExit: (_) {
-                            setState(() {
-                              _isHovered = false;
-                            });
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.all(8),
-                            // margin: const EdgeInsets.only(bottom: 8), /* give only bottom margin */
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: ListTile(
-                              title: Text('Task: $task'),
-                              subtitle: Text(
-                                  'Detail: $description\nDate: $formattedDate'),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      isComplete
-                                          ? Icons.check_circle
-                                          : Icons.radio_button_unchecked,
-                                      color: isComplete ? Colors.green : null,
-                                    ),
-                                    onPressed: () {
-                                      _toggleTodoComplete(todoId, formattedDate,
-                                          isComplete, index);
-                                    },
+                        return Container(
+                          margin: const EdgeInsets.all(8),
+                          // margin: const EdgeInsets.only(bottom: 8), /* give only bottom margin */
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: ListTile(
+                            title: Text('Task: $task'),
+                            subtitle: Text(
+                                'Detail: $description\nDate: $formattedDate'),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    isComplete
+                                        ? Icons.check_circle
+                                        : Icons.radio_button_unchecked,
+                                    color: isComplete ? Colors.green : null,
                                   ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () {
-                                      _showDeleteConfirmationDialog(
-                                          todoItem['_id']);
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.edit),
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => EditTodoApp(
-                                            taskId: todoItem['_id'] ?? "",
-                                            task:
-                                                todoItem['task'] ?? "untitled",
-                                            description:
-                                                todoItem['description'] ??
-                                                    "No Description",
-                                            datePart: todoItem['date'] ?? "",
-                                          ),
+                                  onPressed: () {
+                                    _toggleTodoComplete(todoId, formattedDate,
+                                        isComplete, index);
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () {
+                                    _showDeleteConfirmationDialog(
+                                        todoItem['_id']);
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => EditTodoApp(
+                                          taskId: todoItem['_id'] ?? "",
+                                          task: todoItem['task'] ?? "untitled",
+                                          description:
+                                              todoItem['description'] ??
+                                                  "No Description",
+                                          datePart: todoItem['date'] ?? "",
                                         ),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -247,10 +233,12 @@ class _DashboardState extends State<Dashboard> {
         setState(() {
           _todoItems[index]['isComplete'] = !isComplete;
         });
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Todo status updated')),
         );
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to update todo')),
         );
@@ -304,10 +292,12 @@ class _DashboardState extends State<Dashboard> {
         setState(() {
           _todoItems.removeWhere((item) => item['_id'] == todoId);
         });
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Todo deleted successfully')),
         );
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to delete todo')),
         );
@@ -323,6 +313,7 @@ class _DashboardState extends State<Dashboard> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('loginToken');
 
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Successfully logged out')),
     );

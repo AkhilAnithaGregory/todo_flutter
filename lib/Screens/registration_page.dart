@@ -154,12 +154,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
           MaterialPageRoute(builder: (context) => const LoginPage()),
         );
       },
-      child: const Text('Cancel'),
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF9395D2),
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       ),
+      child: const Text('Cancel'),
     ));
   }
 

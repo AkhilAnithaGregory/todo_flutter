@@ -64,11 +64,13 @@ class _EditTodoAppState extends State<EditTodoApp> {
 
     if (response.statusCode == 200) {
       await _fetchUpdatedTodos();
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const Dashboard()),
       );
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to update todo')),
       );
@@ -88,8 +90,12 @@ class _EditTodoAppState extends State<EditTodoApp> {
     );
 
     if (response.statusCode == 200) {
-      final List todos = json.decode(response.body);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Successfully Todo Fetched')),
+      );
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to fetch updated todos')),
       );

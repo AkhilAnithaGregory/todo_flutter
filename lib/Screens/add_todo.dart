@@ -209,7 +209,7 @@ class _AddTodoState extends State<AddTodo> {
         _showSnackBar('Todo Added Successfully');
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => Dashboard()),
+          MaterialPageRoute(builder: (context) => const Dashboard()),
         );
       } else {
         if (!mounted) return;
