@@ -1,17 +1,32 @@
 import 'package:flutter/material.dart';
-import 'screens/login_page.dart'; // Import LoginPage
+import 'package:shared_preferences/shared_preferences.dart';
+import 'screens/login_page.dart';
+import 'screens/todo_dashboard.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final prefs = await SharedPreferences.getInstance();
+  String? loginToken = prefs.getString('loginToken');
+
+  runApp(MyApp(
+      initialRoute:
+          loginToken != null && loginToken.isNotEmpty ? 'dashboard' : 'login'));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute;
+
+  const MyApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: LoginPage(), // Set LoginPage as the home screen
+    return MaterialApp(
+      initialRoute: initialRoute,
+      routes: {
+        'login': (context) => const LoginPage(),
+        'dashboard': (context) => const Dashboard(),
+      },
     );
   }
 }

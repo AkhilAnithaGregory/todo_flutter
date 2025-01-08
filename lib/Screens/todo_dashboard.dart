@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import 'package:todo_flutter/Screens/login_page.dart';
 import 'add_todo.dart';
-import 'edit_todo.dart'; // Import EditTodoApp
+import 'edit_todo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -17,6 +18,7 @@ class _DashboardState extends State<Dashboard> {
   final Logger logger = Logger();
   String _loginToken = '';
   bool _isLoading = false;
+  bool _isHovered = false;
   List<dynamic> _todoItems = [];
   DateTime? _selectedDate = DateTime.now();
 
@@ -58,7 +60,6 @@ class _DashboardState extends State<Dashboard> {
 
       if (response.statusCode == 200) {
         final List<dynamic> todos = jsonDecode(response.body);
-        logger.i("1: $todos");
         setState(() {
           _todoItems = todos;
         });
@@ -112,6 +113,15 @@ class _DashboardState extends State<Dashboard> {
               _selectDate(context);
             },
           ),
+          IconButton(
+            icon: const Icon(
+              Icons.logout,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              _logout(context);
+            },
+          ),
         ],
       ),
       body: Center(
@@ -132,56 +142,72 @@ class _DashboardState extends State<Dashboard> {
                             "${date.year}-${date.month}-${date.day}";
                         final todoId = todoItem['_id'];
 
-                        return ListTile(
-                          title: Text('Task:$task'),
-                          subtitle:
-                              Text('Detail:$description\nDate: $formattedDate'),
-                          leading: Icon(
-                            isComplete == true
-                                ? Icons.check_circle
-                                : Icons.radio_button_unchecked,
-                            color: isComplete == true ? Colors.green : null,
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  isComplete
-                                      ? Icons.check_circle
-                                      : Icons.radio_button_unchecked,
-                                  color: isComplete ? Colors.green : null,
-                                ),
-                                onPressed: () {
-                                  _toggleTodoComplete(
-                                      todoId, formattedDate, isComplete, index);
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () {
-                                  _showDeleteConfirmationDialog(
-                                      todoItem['_id']);
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => EditTodoApp(
-                                        taskId: todoItem['_id'] ?? "",
-                                        task: todoItem['task'] ?? "untitled",
-                                        description: todoItem['description'] ??
-                                            "No Description",
-                                        datePart: todoItem['date'] ?? "",
-                                      ),
+                        return MouseRegion(
+                          onEnter: (_) {
+                            setState(() {
+                              _isHovered = true;
+                            });
+                          },
+                          onExit: (_) {
+                            setState(() {
+                              _isHovered = false;
+                            });
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.all(8),
+                            // margin: const EdgeInsets.only(bottom: 8), /* give only bottom margin */
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: ListTile(
+                              title: Text('Task: $task'),
+                              subtitle: Text(
+                                  'Detail: $description\nDate: $formattedDate'),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(
+                                      isComplete
+                                          ? Icons.check_circle
+                                          : Icons.radio_button_unchecked,
+                                      color: isComplete ? Colors.green : null,
                                     ),
-                                  );
-                                },
+                                    onPressed: () {
+                                      _toggleTodoComplete(todoId, formattedDate,
+                                          isComplete, index);
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () {
+                                      _showDeleteConfirmationDialog(
+                                          todoItem['_id']);
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => EditTodoApp(
+                                            taskId: todoItem['_id'] ?? "",
+                                            task:
+                                                todoItem['task'] ?? "untitled",
+                                            description:
+                                                todoItem['description'] ??
+                                                    "No Description",
+                                            datePart: todoItem['date'] ?? "",
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         );
                       },
@@ -191,8 +217,7 @@ class _DashboardState extends State<Dashboard> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  AddTodoApp(selectedDate: _selectedDate),
+              builder: (context) => AddTodoApp(selectedDate: _selectedDate),
             ),
           );
         },
@@ -292,5 +317,18 @@ class _DashboardState extends State<Dashboard> {
         SnackBar(content: Text('Error: $error')),
       );
     }
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('loginToken');
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Successfully logged out')),
+    );
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+    );
   }
 }

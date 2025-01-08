@@ -79,7 +79,7 @@ class _EditTodoAppState extends State<EditTodoApp> {
   }
 
   Future<void> _fetchUpdatedTodos() async {
-    final String url = 'https://todo-mww8.onrender.com/api/todos';
+    const String url = 'https://todo-mww8.onrender.com/api/todos';
     final response = await http.get(
       Uri.parse(url),
       headers: {
@@ -126,18 +126,48 @@ class _EditTodoAppState extends State<EditTodoApp> {
               decoration: const InputDecoration(labelText: 'Description'),
             ),
             const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _updateTodo,
-              child: const Text('Update Todo'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF9395D2),
-                foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              ),
+            Row(
+              children: [
+                _buildUpdateTodoButton(),
+                const SizedBox(width: 10),
+                _buildCancelTodoButton()
+              ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildUpdateTodoButton() {
+    return Expanded(
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _updateTodo,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF9395D2),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        ),
+        child: const Text('Update Todo'),
+      ),
+    );
+  }
+
+  Widget _buildCancelTodoButton() {
+    return Expanded(
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const Dashboard()),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF9395D2),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        ),
+        child: const Text('Cancel'),
       ),
     );
   }
