@@ -32,23 +32,40 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login Page'),
+        automaticallyImplyLeading: false,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              _buildPhoneNumberField(),
-              const SizedBox(height: 20),
-              _buildPasswordField(),
-              const SizedBox(height: 20),
-              _buildLoginButtonField(),
-              const SizedBox(height: 20),
-              _buildNavigateToRegistration(),
-            ],
+      body: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    _buildPhoneNumberField(),
+                    const SizedBox(height: 20),
+                    _buildPasswordField(),
+                    const SizedBox(height: 20),
+                    _buildLoginButtonField(),
+                    const SizedBox(height: 20),
+                    _buildNavigateToRegistration(),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20.0),
+            child: Text(
+              "Designed and Developed by Akhil Anitha Gregory",
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -87,13 +104,18 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildLoginButtonField() {
-    return ElevatedButton(
-      onPressed: _isLoading ? null : _submitLoginForm,
-      child: const Text('Login'),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF9395D2),
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _submitLoginForm,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF9395D2),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        ),
+        child: _isLoading
+            ? const CircularProgressIndicator(color: Colors.white)
+            : const Text('Login'),
       ),
     );
   }
@@ -103,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => RegistrationPage()),
+          MaterialPageRoute(builder: (context) => const RegistrationPage()),
         );
       },
       child: const Text('Don\'t have an account? Register here'),
@@ -124,11 +146,6 @@ class _LoginPageState extends State<LoginPage> {
     await prefs.setString('loginToken', token);
   }
 
-  Future<String?> _getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('loginToken');
-  }
-
   Future<void> _submitLogin() async {
     final String phoneNumber = _phoneNumberController.text;
     final String password = _passwordController.text;
@@ -147,14 +164,14 @@ class _LoginPageState extends State<LoginPage> {
       );
       if (response.statusCode == 200) {
         if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Dashboard()),
+        );
         _showSnackBar('Login Successfull');
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
         final String token = responseBody['token'];
         await _saveToken(token);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => Dashboard()),
-        );
       } else {
         if (!mounted) return;
         final Map<String, dynamic> responseBody = jsonDecode(response.body);

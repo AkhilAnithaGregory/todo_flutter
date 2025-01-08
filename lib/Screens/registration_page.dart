@@ -33,29 +33,46 @@ class _RegistrationPageState extends State<RegistrationPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Registration Page'),
+        automaticallyImplyLeading: false,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              _buildPhoneNumberField(),
-              const SizedBox(height: 20),
-              _buildPasswordField(),
-              const SizedBox(height: 20),
-              _buildConfirmPasswordField(),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  _buildRegisterButton(),
-                  const SizedBox(width: 10),
-                  _buildCancelRegistrationButton()
-                ],
+      body: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    _buildPhoneNumberField(),
+                    const SizedBox(height: 20),
+                    _buildPasswordField(),
+                    const SizedBox(height: 20),
+                    _buildConfirmPasswordField(),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        _buildRegisterButton(),
+                        const SizedBox(width: 10),
+                        _buildCancelRegistrationButton()
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20.0),
+            child: Text(
+              "Designed and Developed by Akhil Anitha Gregory",
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -117,12 +134,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
     return Expanded(
         child: ElevatedButton(
       onPressed: _isLoading ? null : _submitForm,
-      child: const Text('Register'),
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF9395D2),
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       ),
+      child: _isLoading
+          ? const CircularProgressIndicator(color: Colors.white)
+          : const Text('Register'),
     ));
   }
 
