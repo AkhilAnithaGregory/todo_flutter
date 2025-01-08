@@ -66,7 +66,7 @@ class _EditTodoAppState extends State<EditTodoApp> {
       await _fetchUpdatedTodos();
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Dashboard()),
+        MaterialPageRoute(builder: (context) => const Dashboard()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -100,7 +100,17 @@ class _EditTodoAppState extends State<EditTodoApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Todo'),
+        title: const Text('Edit Todo', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF9395D2),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const Dashboard()),
+            );
+          },
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

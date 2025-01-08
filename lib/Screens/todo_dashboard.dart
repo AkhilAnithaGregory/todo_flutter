@@ -14,24 +14,11 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  int _selectedIndex = 0;
   final Logger logger = Logger();
   String _loginToken = '';
+  bool _isLoading = false;
   List<dynamic> _todoItems = [];
-
-  static const TextStyle optionStyle =
-      TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-
-  static const List<Widget> _widgetOptions = <Widget>[
-    Text(
-      'All Items',
-      style: optionStyle,
-    ),
-    Text(
-      'Completed Items',
-      style: optionStyle,
-    ),
-  ];
+  DateTime? _selectedDate = DateTime.now();
 
   @override
   void initState() {
@@ -57,7 +44,9 @@ class _DashboardState extends State<Dashboard> {
         date ?? DateTime.now().toIso8601String().split('T').first;
     final String url =
         'https://todo-mww8.onrender.com/api/todo?date=$selectedDate';
-
+    setState(() {
+      _isLoading = true;
+    });
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -69,34 +58,38 @@ class _DashboardState extends State<Dashboard> {
 
       if (response.statusCode == 200) {
         final List<dynamic> todos = jsonDecode(response.body);
+        logger.i("1: $todos");
         setState(() {
           _todoItems = todos;
         });
       } else {
         logger.e('Failed to load todos: ${response.body}');
+        setState(() {
+          _todoItems = [];
+        });
       }
     } catch (error) {
       logger.e('Error fetching todos: $error');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
   }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _selectedDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
 
-    if (pickedDate != null) {
-      String formattedDate = pickedDate.toIso8601String().split('T').first;
-      _fetchTodos(formattedDate);
+    if (pickedDate != null && pickedDate != _selectedDate) {
+      setState(() {
+        _selectedDate = pickedDate;
+      });
+      _fetchTodos(_selectedDate?.toIso8601String().split('T').first);
     }
   }
 
@@ -105,7 +98,7 @@ class _DashboardState extends State<Dashboard> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'TODO APP',
+          'Todo App',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color(0xFF9395D2),
@@ -122,100 +115,89 @@ class _DashboardState extends State<Dashboard> {
         ],
       ),
       body: Center(
-        child: _todoItems.isEmpty
-            ? const CircularProgressIndicator()
-            : ListView.builder(
-                itemCount: _todoItems.length,
-                itemBuilder: (context, index) {
-                  final todoItem = _todoItems[index];
-                  final task = todoItem['task'] ?? 'Untitled';
-                  final description =
-                      todoItem['description'] ?? 'No description';
-                  final isComplete = todoItem['isComplete'] ?? false;
-                  final date = DateTime.parse(todoItem['date']);
-                  final formattedDate =
-                      "${date.year}-${date.month}-${date.day}";
-                  final todoId = todoItem['_id'];
+          child: _isLoading
+              ? const CircularProgressIndicator()
+              : _todoItems.isEmpty
+                  ? const Center(child: Text('No Todo to show'))
+                  : ListView.builder(
+                      itemCount: _todoItems.length,
+                      itemBuilder: (context, index) {
+                        final todoItem = _todoItems[index];
+                        final task = todoItem['task'] ?? 'Untitled';
+                        final description =
+                            todoItem['description'] ?? 'No description';
+                        final isComplete = todoItem['isComplete'] ?? false;
+                        final date = DateTime.parse(todoItem['date']);
+                        final formattedDate =
+                            "${date.year}-${date.month}-${date.day}";
+                        final todoId = todoItem['_id'];
 
-                  return ListTile(
-                    title: Text('Task:$task'),
-                    subtitle: Text('Detail:$description\nDate: $formattedDate'),
-                    leading: Icon(
-                      isComplete == true
-                          ? Icons.check_circle
-                          : Icons.radio_button_unchecked,
-                      color: isComplete == true ? Colors.green : null,
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            isComplete
+                        return ListTile(
+                          title: Text('Task:$task'),
+                          subtitle:
+                              Text('Detail:$description\nDate: $formattedDate'),
+                          leading: Icon(
+                            isComplete == true
                                 ? Icons.check_circle
                                 : Icons.radio_button_unchecked,
-                            color: isComplete ? Colors.green : null,
+                            color: isComplete == true ? Colors.green : null,
                           ),
-                          onPressed: () {
-                            _toggleTodoComplete(
-                                todoId, formattedDate, isComplete, index);
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            _showDeleteConfirmationDialog(todoItem['_id']);
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EditTodoApp(
-                                  taskId: todoItem['_id'] ?? "",
-                                  task: todoItem['task'] ?? "untitled",
-                                  description: todoItem['description'] ??
-                                      "No Description",
-                                  datePart: todoItem['date'] ?? "",
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  isComplete
+                                      ? Icons.check_circle
+                                      : Icons.radio_button_unchecked,
+                                  color: isComplete ? Colors.green : null,
                                 ),
+                                onPressed: () {
+                                  _toggleTodoComplete(
+                                      todoId, formattedDate, isComplete, index);
+                                },
                               ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-      ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () {
+                                  _showDeleteConfirmationDialog(
+                                      todoItem['_id']);
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EditTodoApp(
+                                        taskId: todoItem['_id'] ?? "",
+                                        task: todoItem['task'] ?? "untitled",
+                                        description: todoItem['description'] ??
+                                            "No Description",
+                                        datePart: todoItem['date'] ?? "",
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    )),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const AddTodoApp(),
+              builder: (context) =>
+                  AddTodoApp(selectedDate: _selectedDate),
             ),
           );
         },
         backgroundColor: const Color(0xFF9395D2),
         child: const Icon(Icons.add),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'All',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.check_circle),
-            label: 'Complete',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
-        onTap: _onItemTapped,
       ),
     );
   }

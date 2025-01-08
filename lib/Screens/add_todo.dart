@@ -8,18 +8,24 @@ import 'package:http/http.dart' as http;
 void main() => runApp(const AddTodoApp());
 
 class AddTodoApp extends StatelessWidget {
-  const AddTodoApp({super.key});
+  final DateTime? selectedDate;
+
+  const AddTodoApp({super.key, this.selectedDate});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: AddTodo(),
+    return MaterialApp(
+      home: AddTodo(
+        selectedDate: selectedDate,
+      ),
     );
   }
 }
 
 class AddTodo extends StatefulWidget {
-  const AddTodo({super.key});
+  final DateTime? selectedDate;
+
+  const AddTodo({super.key, this.selectedDate});
 
   @override
   State<AddTodo> createState() => _AddTodoState();
@@ -56,15 +62,16 @@ class _AddTodoState extends State<AddTodo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'ADD TODO',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Add Todo', style: TextStyle(color: Colors.white)),
+        automaticallyImplyLeading: false,
         backgroundColor: const Color(0xFF9395D2),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const Dashboard()),
+            );
           },
         ),
       ),
@@ -126,13 +133,13 @@ class _AddTodoState extends State<AddTodo> {
   Widget _buildAddTodoButton() {
     return Expanded(
       child: ElevatedButton(
-        onPressed: _isLoading ? null :_submitForm,
-        child: const Text('Add Todo'),
+        onPressed: _isLoading ? null : _submitForm,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF9395D2),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         ),
+        child: const Text('Add Todo'),
       ),
     );
   }
@@ -146,12 +153,12 @@ class _AddTodoState extends State<AddTodo> {
             MaterialPageRoute(builder: (context) => const Dashboard()),
           );
         },
-        child: const Text('Cancel'),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF9395D2),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         ),
+        child: const Text('Cancel'),
       ),
     );
   }
@@ -169,7 +176,8 @@ class _AddTodoState extends State<AddTodo> {
     final String title = _titleController.text;
     final String detail = _detailController.text;
     final String selectedDate =
-        DateTime.now().toIso8601String().split('T').first;
+        widget.selectedDate?.toIso8601String().split('T').first ??
+            DateTime.now().toIso8601String().split('T').first;
     bool isComplete = false;
     const String url = 'https://todo-mww8.onrender.com/api/todo';
 
